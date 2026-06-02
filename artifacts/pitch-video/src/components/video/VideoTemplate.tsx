@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useVideoPlayer } from '@/lib/video';
 import { Scene1 } from './video_scenes/Scene1';
@@ -55,6 +55,26 @@ export default function VideoTemplate({
   const baseSceneKey = currentSceneKey.replace(/_r[12]$/, '') as keyof typeof SCENE_DURATIONS;
   const SceneComponent = SCENE_COMPONENTS[baseSceneKey];
   const sceneLabel = SCENE_LABELS[baseSceneKey];
+  const sceneDuration = durations[baseSceneKey] ?? durations[currentSceneKey] ?? 0;
+
+  // Countdown timer
+  const [remaining, setRemaining] = useState(sceneDuration);
+  const startRef = useRef(performance.now());
+
+  useEffect(() => {
+    startRef.current = performance.now();
+    setRemaining(sceneDuration);
+    const id = window.setInterval(() => {
+      const elapsed = performance.now() - startRef.current;
+      const left = Math.max(0, sceneDuration - elapsed);
+      setRemaining(left);
+    }, 100);
+    return () => window.clearInterval(id);
+  }, [currentSceneKey, sceneDuration]);
+
+  const remainingSec = Math.ceil(remaining / 1000);
+  const progress = sceneDuration > 0 ? Math.max(0, Math.min(1, 1 - remaining / sceneDuration)) : 0;
+  const circumference = 2 * Math.PI * 14;
 
   return (
     <div
@@ -123,10 +143,45 @@ export default function VideoTemplate({
         </motion.div>
       </AnimatePresence>
 
+      {/* Countdown timer — circular ring */}
+      <div className="absolute top-7 right-8 z-50 flex items-center gap-3">
+        <svg width="40" height="40" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
+          {/* Track */}
+          <circle
+            cx="18" cy="18" r="14"
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="2.5"
+          />
+          {/* Progress arc */}
+          <motion.circle
+            cx="18" cy="18" r="14"
+            fill="none"
+            stroke="url(#timerGrad)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            style={{
+              strokeDasharray: circumference,
+              strokeDashoffset: circumference * progress,
+            }}
+          />
+          <defs>
+            <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#A78BFA" />
+              <stop offset="100%" stopColor="#FF6B6B" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <span
+          className="text-xs font-bold tabular-nums"
+          style={{ color: 'rgba(240,238,255,0.55)', fontFamily: 'var(--font-body)', minWidth: '1.5ch' }}
+        >
+          {remainingSec}s
+        </span>
+      </div>
+
       {/* Lumio wordmark */}
-      <div
-        className="absolute bottom-7 right-8 z-50"
-      >
+      <div className="absolute bottom-7 right-8 z-50">
         <span
           className="text-sm font-bold tracking-widest opacity-30"
           style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
