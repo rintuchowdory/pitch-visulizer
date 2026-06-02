@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #E07A5F; /* Warm Coral */
+  --color-secondary: #F4A261; /* Soft Orange */
+  --color-accent: #81B29A; /* Muted Green */
+
+  --color-bg-light: #FDF8F5; /* Warm Beige */
+  --color-bg-dark: #2A3B4C; /* Deep Navy / Blue Grey */
+  --color-bg-muted: #F2E8E3;
+
+  --color-text-primary: #2A3B4C;
+  --color-text-secondary: #6B705C;
+  --color-text-muted: #A3A3A3;
+  --color-text-inverse: #FDF8F5;
+
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+@theme inline {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-bg-light: var(--color-bg-light);
+  --color-bg-dark: var(--color-bg-dark);
+  --color-bg-muted: var(--color-bg-muted);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-inverse: var(--color-text-inverse);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
