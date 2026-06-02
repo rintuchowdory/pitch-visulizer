@@ -23,12 +23,18 @@ const SCENE_COMPONENTS: Record<string, React.ComponentType> = {
   outro: Scene5,
 };
 
-const bgPositions = [
-  { x: '10vw', y: '10vh', scale: 1, opacity: 0.6, bg: 'var(--color-secondary)' },
-  { x: '50vw', y: '50vh', scale: 1.5, opacity: 0.2, bg: 'var(--color-bg-dark)' },
-  { x: '30vw', y: '60vh', scale: 0.8, opacity: 0.4, bg: 'var(--color-text-muted)' },
-  { x: '70vw', y: '20vh', scale: 2, opacity: 0.8, bg: 'var(--color-primary)' },
-  { x: '40vw', y: '40vh', scale: 1.2, opacity: 0.7, bg: 'var(--color-secondary)' },
+const SCENE_LABELS: Record<string, string> = {
+  hook: 'The Setup',
+  problem: 'The Problem',
+  transition: 'The Reality',
+  solution: 'The Solution',
+  outro: 'The Vision',
+};
+
+const bgOrbs = [
+  { color: 'rgba(167,139,250,0.18)', x: '-10%', y: '-15%', size: '70vw' },
+  { color: 'rgba(255,107,107,0.12)', x: '60%',  y: '50%',  size: '50vw' },
+  { color: 'rgba(96,165,250,0.10)',  x: '30%',  y: '80%',  size: '40vw' },
 ];
 
 export default function VideoTemplate({
@@ -40,49 +46,94 @@ export default function VideoTemplate({
   loop?: boolean;
   onSceneChange?: (sceneKey: string) => void;
 } = {}) {
-  const { currentScene, currentSceneKey } = useVideoPlayer({ durations, loop });
+  const { currentSceneKey } = useVideoPlayer({ durations, loop });
 
   useEffect(() => {
     onSceneChange?.(currentSceneKey);
   }, [currentSceneKey, onSceneChange]);
 
   const baseSceneKey = currentSceneKey.replace(/_r[12]$/, '') as keyof typeof SCENE_DURATIONS;
-  const sceneIndex = Object.keys(SCENE_DURATIONS).indexOf(baseSceneKey);
   const SceneComponent = SCENE_COMPONENTS[baseSceneKey];
+  const sceneLabel = SCENE_LABELS[baseSceneKey];
 
   return (
     <div
       className="w-full h-screen overflow-hidden relative"
       style={{ backgroundColor: 'var(--color-bg-light)' }}
     >
-      <div className="absolute inset-0 z-0 opacity-40 mix-blend-multiply pointer-events-none">
+      {/* Static deep ambient orbs */}
+      {bgOrbs.map((orb, i) => (
         <motion.div
-          className="absolute w-[80vw] h-[80vw] rounded-full blur-[100px]"
-          animate={{
-            x: ['-20%', '10%', '-10%'],
-            y: ['-10%', '20%', '0%'],
-            scale: [1, 1.1, 0.9],
+          key={i}
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: orb.size, height: orb.size,
+            left: orb.x, top: orb.y,
+            background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
+            filter: 'blur(60px)',
           }}
-          transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ background: 'radial-gradient(circle, var(--color-bg-muted), transparent 70%)' }}
+          animate={{ scale: [1, 1.08, 1], opacity: [0.8, 1, 0.8] }}
+          transition={{ duration: 8 + i * 2, repeat: Infinity, ease: 'easeInOut', delay: i * 1.5 }}
         />
-      </div>
+      ))}
 
-      <motion.div
-        className="absolute w-[40vw] h-[40vw] rounded-full blur-[80px] z-0"
-        animate={{
-          x: bgPositions[sceneIndex]?.x || '50vw',
-          y: bgPositions[sceneIndex]?.y || '50vh',
-          scale: bgPositions[sceneIndex]?.scale || 1,
-          opacity: bgPositions[sceneIndex]?.opacity || 0.5,
-          backgroundColor: bgPositions[sceneIndex]?.bg || 'var(--color-primary)',
+      {/* Subtle grid */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)',
+          backgroundSize: '60px 60px',
+          maskImage: 'radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%)',
         }}
-        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
       />
 
+      {/* Scene */}
       <AnimatePresence mode="popLayout">
         {SceneComponent && <SceneComponent key={currentSceneKey} />}
       </AnimatePresence>
+
+      {/* Scene title badge */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={baseSceneKey}
+          className="absolute top-7 left-8 z-50 flex items-center gap-2.5 px-4 py-2 rounded-full"
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+          }}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        >
+          <motion.span
+            className="w-2 h-2 rounded-full"
+            style={{ background: 'linear-gradient(135deg, #FF6B6B, #A78BFA)' }}
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+          />
+          <span
+            className="text-xs font-semibold tracking-[0.18em] uppercase"
+            style={{ color: 'rgba(240,238,255,0.7)', fontFamily: 'var(--font-body)' }}
+          >
+            {sceneLabel}
+          </span>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Lumio wordmark */}
+      <div
+        className="absolute bottom-7 right-8 z-50"
+      >
+        <span
+          className="text-sm font-bold tracking-widest opacity-30"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+        >
+          LUMIO
+        </span>
+      </div>
     </div>
   );
 }
