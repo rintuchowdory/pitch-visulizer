@@ -18,3 +18,9 @@ id = "EtzM907oq54GwMhqEpy4h"
 uri = "file://artifacts/pitch-video/public/images/human_isolated.png"
 type = "image"
 title = "isolated overwhelmed person"
+
+[[generated]]
+id = "y1bmBS72ZETVlRmD5cfXz"
+uri = "file://artifacts/pitch-video/public/images/lumio_ui.png"
+type = "image"
+title = "Lumio UI card mockup"

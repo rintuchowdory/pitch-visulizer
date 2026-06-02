@@ -6,12 +6,14 @@ import { Scene2 } from './video_scenes/Scene2';
 import { Scene3 } from './video_scenes/Scene3';
 import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
+import { Scene6 } from './video_scenes/Scene6';
 
 export const SCENE_DURATIONS: Record<string, number> = {
   hook: 3500,
   problem: 4500,
   transition: 3000,
   solution: 5000,
+  beforeafter: 5500,
   outro: 4000,
 };
 
@@ -20,6 +22,7 @@ const SCENE_COMPONENTS: Record<string, React.ComponentType> = {
   problem: Scene2,
   transition: Scene3,
   solution: Scene4,
+  beforeafter: Scene6,
   outro: Scene5,
 };
 
@@ -28,6 +31,7 @@ const SCENE_LABELS: Record<string, string> = {
   problem: 'The Problem',
   transition: 'The Reality',
   solution: 'The Solution',
+  beforeafter: 'Before vs After',
   outro: 'The Vision',
 };
 
