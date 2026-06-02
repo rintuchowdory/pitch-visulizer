@@ -40,13 +40,15 @@ const bgOrbs = [
 export default function VideoTemplate({
   durations = SCENE_DURATIONS,
   loop = true,
+  paused = false,
   onSceneChange,
 }: {
   durations?: Record<string, number>;
   loop?: boolean;
+  paused?: boolean;
   onSceneChange?: (sceneKey: string) => void;
 } = {}) {
-  const { currentSceneKey } = useVideoPlayer({ durations, loop });
+  const { currentSceneKey } = useVideoPlayer({ durations, loop, paused });
 
   useEffect(() => {
     onSceneChange?.(currentSceneKey);
@@ -57,20 +59,33 @@ export default function VideoTemplate({
   const sceneLabel = SCENE_LABELS[baseSceneKey];
   const sceneDuration = durations[baseSceneKey] ?? durations[currentSceneKey] ?? 0;
 
-  // Countdown timer
+  // Countdown — pauses when video is paused
   const [remaining, setRemaining] = useState(sceneDuration);
   const startRef = useRef(performance.now());
+  const elapsedAtPauseRef = useRef(0);
 
+  // Reset on scene change
   useEffect(() => {
+    elapsedAtPauseRef.current = 0;
     startRef.current = performance.now();
     setRemaining(sceneDuration);
+  }, [currentSceneKey, sceneDuration]);
+
+  // Tick while playing; freeze while paused
+  useEffect(() => {
+    if (paused) {
+      // Capture how much has elapsed so far
+      elapsedAtPauseRef.current += performance.now() - startRef.current;
+      return;
+    }
+    // Resume: restart the clock from where we left off
+    startRef.current = performance.now();
     const id = window.setInterval(() => {
-      const elapsed = performance.now() - startRef.current;
-      const left = Math.max(0, sceneDuration - elapsed);
-      setRemaining(left);
+      const elapsed = elapsedAtPauseRef.current + (performance.now() - startRef.current);
+      setRemaining(Math.max(0, sceneDuration - elapsed));
     }, 100);
     return () => window.clearInterval(id);
-  }, [currentSceneKey, sceneDuration]);
+  }, [paused, currentSceneKey, sceneDuration]);
 
   const remainingSec = Math.ceil(remaining / 1000);
   const progress = sceneDuration > 0 ? Math.max(0, Math.min(1, 1 - remaining / sceneDuration)) : 0;
@@ -81,7 +96,7 @@ export default function VideoTemplate({
       className="w-full h-screen overflow-hidden relative"
       style={{ backgroundColor: 'var(--color-bg-light)' }}
     >
-      {/* Static deep ambient orbs */}
+      {/* Ambient orbs */}
       {bgOrbs.map((orb, i) => (
         <motion.div
           key={i}
@@ -92,7 +107,7 @@ export default function VideoTemplate({
             background: `radial-gradient(circle, ${orb.color} 0%, transparent 70%)`,
             filter: 'blur(60px)',
           }}
-          animate={{ scale: [1, 1.08, 1], opacity: [0.8, 1, 0.8] }}
+          animate={paused ? {} : { scale: [1, 1.08, 1], opacity: [0.8, 1, 0.8] }}
           transition={{ duration: 8 + i * 2, repeat: Infinity, ease: 'easeInOut', delay: i * 1.5 }}
         />
       ))}
@@ -110,6 +125,51 @@ export default function VideoTemplate({
       {/* Scene */}
       <AnimatePresence mode="popLayout">
         {SceneComponent && <SceneComponent key={currentSceneKey} />}
+      </AnimatePresence>
+
+      {/* Pause overlay */}
+      <AnimatePresence>
+        {paused && (
+          <motion.div
+            className="absolute inset-0 z-40 flex items-center justify-center pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div
+              className="absolute inset-0"
+              style={{ background: 'rgba(7,7,15,0.45)', backdropFilter: 'blur(2px)' }}
+            />
+            <motion.div
+              className="relative flex items-center gap-3"
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              <div
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <rect x="4" y="3" width="4" height="14" rx="1.5" fill="rgba(240,238,255,0.7)" />
+                  <rect x="12" y="3" width="4" height="14" rx="1.5" fill="rgba(240,238,255,0.7)" />
+                </svg>
+                <span
+                  className="text-sm font-semibold tracking-[0.15em] uppercase"
+                  style={{ color: 'rgba(240,238,255,0.7)' }}
+                >
+                  Paused
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
 
       {/* Scene title badge */}
@@ -131,7 +191,7 @@ export default function VideoTemplate({
           <motion.span
             className="w-2 h-2 rounded-full"
             style={{ background: 'linear-gradient(135deg, #FF6B6B, #A78BFA)' }}
-            animate={{ opacity: [0.6, 1, 0.6] }}
+            animate={paused ? { opacity: 0.4 } : { opacity: [0.6, 1, 0.6] }}
             transition={{ duration: 1.8, repeat: Infinity }}
           />
           <span
@@ -143,18 +203,11 @@ export default function VideoTemplate({
         </motion.div>
       </AnimatePresence>
 
-      {/* Countdown timer — circular ring */}
+      {/* Countdown ring */}
       <div className="absolute top-7 right-8 z-50 flex items-center gap-3">
         <svg width="40" height="40" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)' }}>
-          {/* Track */}
+          <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="2.5" />
           <circle
-            cx="18" cy="18" r="14"
-            fill="none"
-            stroke="rgba(255,255,255,0.08)"
-            strokeWidth="2.5"
-          />
-          {/* Progress arc */}
-          <motion.circle
             cx="18" cy="18" r="14"
             fill="none"
             stroke="url(#timerGrad)"
@@ -163,6 +216,7 @@ export default function VideoTemplate({
             style={{
               strokeDasharray: circumference,
               strokeDashoffset: circumference * progress,
+              transition: 'stroke-dashoffset 0.1s linear',
             }}
           />
           <defs>
