@@ -50,6 +50,24 @@ export function Scene2() {
         ))}
       </div>
 
+      {/* Human illustration — isolated figure */}
+      <motion.div
+        className="absolute left-[6vw] top-1/2 z-20 pointer-events-none"
+        style={{ width: '20vw', transform: 'translateY(-55%)' }}
+        initial={{ opacity: 0, x: -50, scale: 0.9 }}
+        animate={phase >= 3 ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: -50, scale: 0.9 }}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.img
+          src="/pitch-video/images/human_isolated.png"
+          alt=""
+          className="w-full h-auto"
+          style={{ filter: 'drop-shadow(0 0 30px rgba(255,107,107,0.25))' }}
+          animate={{ y: [0, 8, 0], rotate: [-1, 1, -1] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      </motion.div>
+
       {/* Central text */}
       <motion.div
         className="relative text-center z-20 px-12"

@@ -88,8 +88,25 @@ export function Scene1() {
         </defs>
       </svg>
 
+      {/* Floating human illustration */}
+      <motion.div
+        className="absolute right-[6vw] top-1/2 z-10 pointer-events-none"
+        style={{ width: '22vw', transform: 'translateY(-50%)' }}
+        initial={{ opacity: 0, x: 60, scale: 0.9 }}
+        animate={phase >= 2 ? { opacity: 1, x: 0, scale: 1 } : { opacity: 0, x: 60, scale: 0.9 }}
+        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.img
+          src="/pitch-video/images/human_connected.png"
+          alt=""
+          className="w-full h-auto drop-shadow-2xl"
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      </motion.div>
+
       {/* Text */}
-      <div className="relative text-center w-full max-w-5xl px-10 z-10">
+      <div className="relative text-center w-full max-w-5xl px-10 z-10" style={{ marginRight: '18vw' }}>
         <div className="overflow-hidden mb-2">
           <motion.h1
             className="text-[6.5vw] leading-tight font-bold"

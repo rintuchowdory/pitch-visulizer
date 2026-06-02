@@ -79,6 +79,24 @@ export function Scene4() {
         </motion.p>
       </motion.div>
 
+      {/* Celebrating team illustration */}
+      <motion.div
+        className="absolute z-10 pointer-events-none"
+        style={{ bottom: '4%', right: '5vw', width: '24vw' }}
+        initial={{ opacity: 0, y: 40, scale: 0.85 }}
+        animate={phase >= 4 ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 40, scale: 0.85 }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <motion.img
+          src="/pitch-video/images/human_team.png"
+          alt=""
+          className="w-full h-auto"
+          style={{ filter: 'drop-shadow(0 0 40px rgba(255,217,61,0.3))' }}
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      </motion.div>
+
       {/* Feature cards */}
       <motion.div
         className="absolute flex gap-6 z-10"
